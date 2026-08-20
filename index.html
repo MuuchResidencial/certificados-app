@@ -179,7 +179,7 @@
 
   .entry-card{padding:18px 20px; margin-bottom:11px; position:relative;}
   .entry-name{font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--cyan); margin-bottom:8px; display:block;}
-  .entry-text{font-size:15.5px; line-height:1.6; color:var(--foam); margin:0; padding-right:70px;}
+  .entry-text{font-size:15.5px; line-height:1.6; color:var(--foam); margin:0; padding-right:70px; white-space:pre-line;}
   .entry-text mark{background:none; color:var(--gold); font-weight:700; border-bottom:2px solid var(--gold); padding:0 1px;}
   .copy-btn{position:absolute; top:16px; right:18px; background:transparent; border:1px solid var(--line); color:var(--muted); font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; cursor:pointer; text-transform:uppercase; border-radius:6px; transition:all 0.15s;}
   .copy-btn:hover{background:var(--cyan); color:var(--abyss); border-color:var(--cyan);}
@@ -329,6 +329,8 @@
     <div class="name-bar glass">
       <label for="pitch-name">Nombre del socio</label>
       <input type="text" id="pitch-name" placeholder="Escribe el nombre aquí…">
+      <label for="pitch-dev">Resort</label>
+      <select id="pitch-dev" style="flex:1; min-width:140px;"><option value="">Sin resort</option></select>
       <div class="lang-toggle" id="pitch-lang"><button class="active" data-lang="es">ES</button><button data-lang="en">EN</button></div>
     </div>
     <div class="search-row"><input type="text" id="pitch-search" placeholder="Buscar por nombre…"></div>
@@ -342,6 +344,8 @@
     <div class="name-bar glass">
       <label for="email-name">Nombre del socio</label>
       <input type="text" id="email-name" placeholder="Escribe el nombre aquí…">
+      <label for="email-dev">Resort</label>
+      <select id="email-dev" style="flex:1; min-width:140px;"><option value="">Sin resort</option></select>
       <div class="lang-toggle" id="email-lang"><button class="active" data-lang="es">ES</button><button data-lang="en">EN</button></div>
     </div>
     <div class="search-row"><input type="text" id="email-search" placeholder="Buscar por nombre…"></div>
@@ -421,6 +425,9 @@ const mockEmails = [
   {nombre:"Seguimiento Post-Venta",
    es:"Estimado(a) {NOMBRE}, gracias por confiarnos sus próximas vacaciones. Quedamos atentos a cualquier duda sobre su contrato y le compartimos los datos de contacto de su asesor asignado para dar seguimiento personalizado.",
    en:"Dear {NOMBRE}, thank you for trusting us with your upcoming vacation. We remain available for any questions about your contract and are sharing your assigned advisor's contact details for personalized follow-up."},
+  {nombre:"Intento de Contacto — Sin Respuesta",
+   es:"Hola, soy [Nombre del agente]\nIntenté comunicarme con {NOMBRE} con respecto a los beneficios que recibió con su membresía en {RESORT}.\nPor favor, llámeme al número gratuito 1-800 841 7317 o a nuestra línea directa: +52 984 251 0025\nGracias y que tenga un buen día.",
+   en:"Hello, this is [Agent Name]\nI tried to reach {NOMBRE} regarding the benefits received with their membership at {RESORT}.\nPlease call me toll-free at 1-800 841 7317 or our direct line: +52 984 251 0025\nThank you and have a great day."},
 ];
 
 /* Estas variables activas se llenan en init() con datos reales o de ejemplo */
@@ -698,31 +705,46 @@ function renderFichasGrid(){
 }
 
 /* ---------- PITCH / EMAILS ---------- */
-function buildTextList(containerId, data, {query='', lang='es', nameValue=''} = {}){
+function buildTextList(containerId, data, {query='', lang='es', nameValue='', resortValue=''} = {}){
   const el = document.getElementById(containerId);
   const q = query.toLowerCase();
   const filtered = data.filter(d => !q || d.nombre.toLowerCase().includes(q));
   const displayName = nameValue.trim() || (lang==='es' ? '[Nombre del Socio]' : "[Partner's Name]");
+  const displayResort = resortValue.trim() || (lang==='es' ? '[Resort]' : '[Resort]');
   if(!filtered.length){ el.innerHTML = `<p class="subnote" style="text-align:center;padding:20px 0;">Sin resultados.</p>`; return; }
   el.innerHTML = filtered.map((d,i)=>{
-    const withName = (d[lang]||'').split('{NOMBRE}').join(`<mark>${displayName}</mark>`);
+    const withName = (d[lang]||'').split('{NOMBRE}').join(`<mark>${displayName}</mark>`).split('{RESORT}').join(`<mark>${displayResort}</mark>`);
     return `<div class="entry-card glass"><span class="entry-name">${d.nombre}</span><p class="entry-text">${withName}</p><button class="copy-btn" data-copy="${containerId}-${i}">Copiar</button></div>`;
   }).join('');
   el.querySelectorAll('.copy-btn').forEach((btn, idx)=>{
     btn.addEventListener('click', ()=>{
-      navigator.clipboard?.writeText((filtered[idx][lang]||'').split('{NOMBRE}').join(displayName));
+      navigator.clipboard?.writeText((filtered[idx][lang]||'').split('{NOMBRE}').join(displayName).split('{RESORT}').join(displayResort));
       btn.textContent='Copiado'; setTimeout(()=>btn.textContent='Copiar',1400);
     });
   });
 }
+function populateDevSelect(selectEl){
+  selectEl.innerHTML = '<option value="">Sin resort</option>';
+  Object.keys(infoDevelopers).forEach(dev=>{
+    const opt = document.createElement('option');
+    opt.value = dev; opt.textContent = infoDevelopers[dev].resort || dev;
+    selectEl.appendChild(opt);
+  });
+}
 function setupSection(prefix, data){
   const nameInput = document.getElementById(`${prefix}-name`);
+  const devSelectEl = document.getElementById(`${prefix}-dev`);
   const search = document.getElementById(`${prefix}-search`);
   const listId = `${prefix}-list`;
   const langBtns = document.querySelectorAll(`#${prefix}-lang button`);
   let lang='es';
-  function refresh(){ buildTextList(listId, data, {query:search.value, lang, nameValue:nameInput.value}); }
+  populateDevSelect(devSelectEl);
+  function refresh(){
+    const resortName = devSelectEl.value ? (infoDevelopers[devSelectEl.value]?.resort || devSelectEl.value) : '';
+    buildTextList(listId, data, {query:search.value, lang, nameValue:nameInput.value, resortValue:resortName});
+  }
   nameInput.addEventListener('input', refresh);
+  devSelectEl.addEventListener('change', refresh);
   search.addEventListener('input', refresh);
   langBtns.forEach(b=>b.addEventListener('click', ()=>{ langBtns.forEach(x=>x.classList.remove('active')); b.classList.add('active'); lang=b.dataset.lang; refresh(); }));
   refresh();
