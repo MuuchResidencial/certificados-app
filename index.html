@@ -528,14 +528,22 @@ qtyInput.addEventListener('input', ()=>{
   if(v>=1 && v<=20){ selectedQty=v; advanceToStep4(); }
   else { selectedQty=null; currPills.forEach(p=>p.disabled=true); resultBox.classList.remove('show'); rulesBox.classList.remove('show'); }
 });
-function advanceToStep4(){ currPills.forEach(p=>p.disabled=false); setCircuit(4); }
+function advanceToStep4(){
+  currPills.forEach(p=>p.disabled=false);
+  setCircuit(4);
+  selectCurrency('USD'); // por defecto USD, el agente lo cambia si hace falta
+}
+
+function selectCurrency(curr){
+  currPills.forEach(p=>p.classList.toggle('selected', p.dataset.curr===curr));
+  selectedCurrency = curr; activeDiscountKey = null;
+  setCircuit(5); rulesBox.classList.add('show'); renderRules(); showResult();
+}
 
 currPills.forEach(pill=>{
   pill.addEventListener('click', ()=>{
     if(pill.disabled) return;
-    currPills.forEach(p=>p.classList.remove('selected')); pill.classList.add('selected');
-    selectedCurrency = pill.dataset.curr; activeDiscountKey = null;
-    setCircuit(5); rulesBox.classList.add('show'); renderRules(); showResult();
+    selectCurrency(pill.dataset.curr);
   });
 });
 
