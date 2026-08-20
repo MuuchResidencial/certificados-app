@@ -309,7 +309,7 @@
     <p class="subnote">Todos los certificados en su moneda original</p>
     <div class="ledger glass">
       <table>
-        <thead><tr><th>Developer(s)</th><th>Certificado</th><th>Costo</th><th>Reembolso</th></tr></thead>
+        <thead><tr><th>Developer(s)</th><th>Certificado</th><th>Costo + 16% tax</th><th>Reembolso</th></tr></thead>
         <tbody id="ref-tbody"></tbody>
       </table>
     </div>
@@ -633,11 +633,14 @@ function showResult(){
 /* ---------- REFERENCIA ---------- */
 function renderRefTable(){
   const tbody = document.getElementById('ref-tbody');
-  tbody.innerHTML = cobranza.map(c=>`
+  tbody.innerHTML = cobranza.map(c=>{
+    const costoConTax = c.costo * (1 + TAX_PCT/100);
+    return `
     <tr><td>${c.developers.map(d=>`<span class="dev-badge">${d}</span>`).join('')}</td><td>${c.certificado}</td>
-    <td class="num">${c.costo.toLocaleString('en-US')} ${c.moneda}</td>
+    <td class="num">${costoConTax.toLocaleString('en-US', {maximumFractionDigits:2})} ${c.moneda}</td>
     <td class="num">${c.reembolso.toLocaleString('en-US')} ${c.moneda}</td></tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 /* ---------- FICHAS TÉCNICAS (todas, navegables) ---------- */
