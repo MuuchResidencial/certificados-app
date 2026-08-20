@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Información · Information</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --abyss: #090C16;
+    --panel: rgba(20,27,48,0.72);
+    --panel-solid: #141B30;
+    --line: rgba(34,211,238,0.16);
+    --line-strong: rgba(34,211,238,0.4);
+    --cyan: #22D3EE;
+    --blue: #3B82F6;
+    --foam: #E8EEF7;
+    --muted: #7E8AA8;
+    --gold: #F2B84B;
+    --good: #4ADE80;
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;} }
+
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(34,211,238,0.10), transparent 60%),
+      radial-gradient(ellipse 700px 400px at 90% 20%, rgba(59,130,246,0.08), transparent 60%),
+      var(--abyss);
+    color:var(--foam);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:0 20px 90px;}
+  ::selection{background:rgba(34,211,238,0.3);}
+  :focus-visible{outline:2px solid var(--cyan); outline-offset:2px;}
+
+  header{padding:34px 20px 26px; text-align:center; border-bottom:1px solid var(--line); position:relative;}
+  .pulse-row{display:flex; align-items:center; justify-content:center; gap:8px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.14em; color:var(--cyan); text-transform:uppercase; margin-bottom:14px;}
+  .pulse-dot{width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1; transform:scale(1);} 50%{opacity:0.4; transform:scale(0.7);}}
+  header h1{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:clamp(26px,5vw,36px); letter-spacing:-0.01em; margin:0 0 8px;
+    background:linear-gradient(90deg, var(--foam), var(--cyan)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  header p{margin:0; font-size:12px; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); font-family:'JetBrains Mono', monospace;}
+
+  nav.tabs{display:flex; justify-content:center; gap:6px; max-width:920px; margin:20px auto 0; padding:0 20px;}
+  nav.tabs button{flex:1; max-width:220px; padding:11px 10px; background:transparent; color:var(--muted); border:1px solid var(--line);
+    font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:13px; letter-spacing:0.02em; cursor:pointer; transition:all 0.2s; border-radius:6px;}
+  nav.tabs button.active{color:var(--cyan); border-color:var(--line-strong); background:rgba(34,211,238,0.06); box-shadow:0 0 16px rgba(34,211,238,0.12) inset;}
+  nav.tabs button:not(.active):hover{color:var(--foam); border-color:rgba(255,255,255,0.16);}
+
+  main{padding-top:30px;}
+  section{display:none;}
+  section.active{display:block; animation:fade .35s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+  h2.section-title{font-family:'Space Grotesk', sans-serif; font-weight:600; font-size:18px; color:var(--foam); margin:0 0 4px; display:flex; align-items:baseline; gap:10px;}
+  h2.section-title::after{content:"";flex:1;height:1px;background:var(--line);}
+  .subnote{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); letter-spacing:0.08em; margin:0 0 20px; text-transform:uppercase;}
+
+  .glass{background:var(--panel); border:1px solid var(--line); border-radius:12px; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);}
+
+  .status-banner{
+    display:none; align-items:center; gap:10px; padding:11px 16px; margin-bottom:20px; border-radius:8px;
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.04em;
+  }
+  .status-banner.show{display:flex;}
+  .status-banner.live{background:rgba(74,222,128,0.08); border:1px solid rgba(74,222,128,0.3); color:var(--good);}
+  .status-banner.demo{background:rgba(242,184,75,0.08); border:1px solid rgba(242,184,75,0.3); color:var(--gold);}
+  .status-dot{width:6px; height:6px; border-radius:50%; background:currentColor; box-shadow:0 0 6px currentColor;}
+
+  /* WIZARD */
+  .wizard{padding:22px 18px 18px; margin-bottom:22px;}
+  .circuit{display:flex; align-items:center; margin-bottom:22px;}
+  .node{width:26px; height:26px; border-radius:50%; border:2px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); background:var(--panel-solid); transition:all 0.3s;}
+  .node.active{border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 12px rgba(34,211,238,0.5);}
+  .node.done{border-color:var(--cyan); background:var(--cyan); color:var(--abyss); box-shadow:0 0 10px rgba(34,211,238,0.4);}
+  .trace{flex:1; height:2px; background:var(--line); margin:0 4px; position:relative; overflow:hidden;}
+  .trace-fill{position:absolute; inset:0; width:0%; background:linear-gradient(90deg, var(--cyan), var(--blue)); transition:width 0.4s ease; box-shadow:0 0 8px var(--cyan);}
+
+  .steps-grid{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px;}
+  .step-field label{display:block; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:7px;}
+  select, input[type=text], input[type=number]{width:100%; font-family:'Inter', sans-serif; font-size:14px; padding:9px 10px; border:1px solid var(--line); background:rgba(9,12,22,0.6); color:var(--foam); border-radius:6px;}
+  select:disabled, input:disabled{opacity:0.35; cursor:not-allowed;}
+  select:focus, input:focus{outline:none; border-color:var(--cyan); box-shadow:0 0 0 3px rgba(34,211,238,0.12);}
+
+  .pill-row{display:flex; gap:5px; flex-wrap:wrap;}
+  .pill{font-family:'JetBrains Mono', monospace; font-size:12px; padding:8px 10px; border:1px solid var(--line); background:rgba(9,12,22,0.6); color:var(--muted);
+    cursor:pointer; flex:1; min-width:38px; text-align:center; border-radius:6px; transition:all 0.15s;}
+  .pill.selected{background:var(--cyan); color:var(--abyss); border-color:var(--cyan); font-weight:700; box-shadow:0 0 10px rgba(34,211,238,0.4);}
+  .pill:not(.selected):not(:disabled):hover{border-color:var(--line-strong); color:var(--foam);}
+  .pill:disabled{opacity:0.3; cursor:not-allowed;}
+  .qty-manual{display:none; margin-top:6px;}
+  .qty-manual.show{display:block;}
+
+  /* FICHA DEVELOPER */
+  .ficha{display:none; padding:20px 22px; margin-bottom:22px;}
+  .ficha.show{display:block; animation:fade .35s ease;}
+  .ficha-head{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px; margin-bottom:16px;}
+  .ficha-title{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:19px; color:var(--foam);}
+  .ficha-sub{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan); letter-spacing:0.06em; margin-top:2px;}
+  .ficha-link{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); text-decoration:none; border:1px solid var(--line); padding:6px 10px; border-radius:6px; transition:all 0.15s;}
+  .ficha-link:hover{color:var(--cyan); border-color:var(--line-strong);}
+  .ficha-grid{display:grid; grid-template-columns:1fr 1fr; gap:18px;}
+  .ficha-block-label{font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px;}
+  .contact-chip{display:inline-flex; flex-direction:column; gap:1px; background:rgba(255,255,255,0.03); border:1px solid var(--line); border-radius:6px; padding:7px 10px; margin:0 6px 6px 0;}
+  .contact-role{font-family:'JetBrains Mono', monospace; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold);}
+  .contact-name{font-size:13px; color:var(--foam);}
+  .cost-bars{display:flex; align-items:flex-end; gap:4px; height:44px; overflow-x:auto;}
+  .cost-bar-wrap{flex:1; min-width:14px; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .cost-bar{width:100%; background:linear-gradient(180deg, var(--cyan), var(--blue)); border-radius:2px 2px 0 0; min-height:2px;}
+  .cost-year{font-family:'JetBrains Mono', monospace; font-size:8px; color:var(--muted);}
+
+  /* RESULT */
+  .result{display:none; padding:22px; margin-bottom:20px;}
+  .result.show{display:block; animation:fade .35s ease;}
+  .result-head{margin-bottom:16px;}
+  .result-title{font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:19px; color:var(--foam);}
+  .result-dev{font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.06em; color:var(--cyan); text-transform:uppercase; margin-top:3px;}
+  .result-meta{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); margin-top:6px;}
+  .result-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden;}
+  .cell{background:rgba(9,12,22,0.5); padding:14px 16px;}
+  .cell-label{font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:5px;}
+  .cell-value{font-family:'JetBrains Mono', monospace; font-size:18px; font-weight:700; color:var(--foam);}
+  .cell.total .cell-value{color:var(--cyan); font-size:21px; text-shadow:0 0 12px rgba(34,211,238,0.35);}
+  .cell.reembolso .cell-value{color:var(--good);}
+  .cell-strike{text-decoration:line-through; opacity:0.45; font-size:13px; margin-right:6px;}
+  .rate-note{margin-top:13px; font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);}
+
+  /* REGLAS */
+  .rules{display:none; padding:20px 22px; margin-bottom:36px;}
+  .rules.show{display:block;}
+  .rules-title{font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; color:var(--foam); margin-bottom:2px;}
+  .rules-sub{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em; color:var(--muted); text-transform:uppercase; margin-bottom:16px;}
+  .rules-cloud{display:flex; flex-wrap:wrap; gap:9px;}
+  .rule-chip{display:flex; align-items:center; gap:8px; padding:9px 13px; border-radius:20px; border:1px solid var(--line); background:rgba(255,255,255,0.02); cursor:default;
+    opacity:0; transform:translateY(6px) scale(0.96); animation:chipIn 0.35s ease forwards;}
+  @keyframes chipIn{to{opacity:1; transform:translateY(0) scale(1);}}
+  .rule-chip.toggle{cursor:pointer; transition:border-color 0.15s, background 0.15s;}
+  .rule-chip.toggle:hover{border-color:var(--line-strong);}
+  .rule-chip.toggle.active{background:rgba(34,211,238,0.12); border-color:var(--cyan);}
+  .rule-chip.toggle.active .rule-name{color:var(--cyan);}
+  .rule-dot{width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0;}
+  .rule-chip.toggle.active .rule-dot{background:var(--cyan); box-shadow:0 0 6px var(--cyan);}
+  .rule-chip.flag .rule-dot{background:var(--gold);}
+  .rule-name{font-family:'Inter', sans-serif; font-size:12.5px; font-weight:500; color:var(--foam); white-space:nowrap;}
+  .rule-val{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted);}
+  .rules-empty{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--muted); font-style:italic;}
+
+  .ledger{overflow-x:auto; border-radius:12px;}
+  table{width:100%; border-collapse:collapse; min-width:560px;}
+  thead th{background:rgba(34,211,238,0.06); color:var(--cyan); font-family:'JetBrains Mono',monospace; font-weight:600; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; text-align:left; padding:12px 14px;}
+  tbody td{padding:12px 14px; font-size:13.5px; border-top:1px solid var(--line); color:var(--foam);}
+  tbody td.num{font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--muted);}
+  tbody tr:hover{background:rgba(34,211,238,0.04);}
+
+  .name-bar{padding:16px 18px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .name-bar label{font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--cyan);}
+  .name-bar input{flex:1; min-width:180px; background:transparent; border:none; border-bottom:1px dashed var(--line-strong); color:var(--foam); font-family:'Space Grotesk', sans-serif; font-size:17px; padding:4px 2px; border-radius:0;}
+  .name-bar input::placeholder{color:var(--muted);}
+  .name-bar input:focus{outline:none; border-bottom:1px solid var(--cyan); box-shadow:none;}
+  .lang-toggle{display:flex; gap:4px;}
+  .lang-toggle button{font-family:'JetBrains Mono', monospace; font-size:11px; padding:6px 12px; border-radius:6px; border:1px solid var(--line-strong); background:transparent; color:var(--cyan); cursor:pointer;}
+  .lang-toggle button.active{background:var(--cyan); color:var(--abyss); font-weight:700;}
+
+  .search-row{margin-bottom:16px;}
+  .search-row input{font-family:'JetBrains Mono', monospace; font-size:13px; padding:10px 12px; border:1px solid var(--line); background:rgba(9,12,22,0.6); color:var(--foam); width:100%; border-radius:8px;}
+  .search-row input:focus{outline:none; border-color:var(--cyan);}
+
+  .entry-card{padding:18px 20px; margin-bottom:11px; position:relative;}
+  .entry-name{font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--cyan); margin-bottom:8px; display:block;}
+  .entry-text{font-size:15.5px; line-height:1.6; color:var(--foam); margin:0; padding-right:70px;}
+  .entry-text mark{background:none; color:var(--gold); font-weight:700; border-bottom:2px solid var(--gold); padding:0 1px;}
+  .copy-btn{position:absolute; top:16px; right:18px; background:transparent; border:1px solid var(--line); color:var(--muted); font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.06em; padding:5px 10px; cursor:pointer; text-transform:uppercase; border-radius:6px; transition:all 0.15s;}
+  .copy-btn:hover{background:var(--cyan); color:var(--abyss); border-color:var(--cyan);}
+
+  footer{text-align:center; padding:30px 20px 10px; font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; color:var(--muted);}
+
+  @media (max-width:640px){
+    .steps-grid{grid-template-columns:1fr 1fr;}
+    .ficha-grid{grid-template-columns:1fr;}
+    .result-grid{grid-template-columns:1fr;}
+    .entry-text{padding-right:0; padding-bottom:34px;}
+    .copy-btn{top:auto; bottom:16px;}
+    nav.tabs{flex-wrap:wrap;}
+    nav.tabs button{flex:1 1 45%; max-width:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="pulse-row"><span class="pulse-dot"></span> SYNC EN VIVO</div>
+  <h1>Información · Information</h1>
+  <p>Consulta, contacto &amp; conversión</p>
+</header>
+
+<nav class="tabs">
+  <button class="active" data-tab="certificados">Certificados</button>
+  <button data-tab="pitch">Pitch</button>
+  <button data-tab="emails">Emails</button>
+</nav>
+
+<div class="wrap">
+<main>
+
+  <!-- ================= CERTIFICADOS ================= -->
+  <section id="certificados" class="active">
+    <h2 class="section-title">Consultar certificado</h2>
+    <p class="subnote">Developer · Certificado · Cantidad · Moneda</p>
+
+    <div class="status-banner" id="status-banner"></div>
+
+    <div class="wizard glass">
+      <div class="circuit">
+        <div class="node active" id="node1">1</div>
+        <div class="trace"><div class="trace-fill" id="trace1"></div></div>
+        <div class="node" id="node2">2</div>
+        <div class="trace"><div class="trace-fill" id="trace2"></div></div>
+        <div class="node" id="node3">3</div>
+        <div class="trace"><div class="trace-fill" id="trace3"></div></div>
+        <div class="node" id="node4">4</div>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-field">
+          <label>Developer</label>
+          <select id="sel-developer"><option value="">Selecciona…</option></select>
+        </div>
+        <div class="step-field">
+          <label>Certificado</label>
+          <select id="sel-certificado" disabled><option value="">—</option></select>
+        </div>
+        <div class="step-field">
+          <label>Cantidad</label>
+          <div class="pill-row" id="qty-pills">
+            <button class="pill" data-qty="1" disabled>1</button>
+            <button class="pill" data-qty="2" disabled>2</button>
+            <button class="pill" data-qty="4" disabled>4</button>
+            <button class="pill" data-qty="other" disabled>Otro</button>
+          </div>
+          <div class="qty-manual" id="qty-manual"><input type="number" id="qty-input" min="1" max="20" placeholder="1–20"></div>
+        </div>
+        <div class="step-field">
+          <label>Moneda</label>
+          <div class="pill-row" id="curr-pills">
+            <button class="pill" data-curr="USD" disabled>USD</button>
+            <button class="pill" data-curr="MXN" disabled>MXN</button>
+            <button class="pill" data-curr="CAD" disabled>CAD</button>
+            <button class="pill" data-curr="EUR" disabled>EUR</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ficha glass" id="ficha">
+      <div class="ficha-head">
+        <div>
+          <div class="ficha-title" id="ficha-resort">—</div>
+          <div class="ficha-sub" id="ficha-club">—</div>
+        </div>
+        <a href="#" target="_blank" class="ficha-link" id="ficha-web">Sitio web ↗</a>
+      </div>
+      <div class="ficha-grid">
+        <div>
+          <div class="ficha-block-label">Directorio</div>
+          <div id="ficha-contacts"></div>
+        </div>
+        <div>
+          <div class="ficha-block-label">Costo histórico</div>
+          <div class="cost-bars" id="ficha-costbars"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result glass" id="result">
+      <div class="result-head">
+        <div class="result-title" id="res-title">—</div>
+        <div class="result-dev" id="res-dev">—</div>
+        <div class="result-meta" id="res-meta"></div>
+      </div>
+      <div class="result-grid">
+        <div class="cell"><div class="cell-label">Costo base</div><div class="cell-value" id="res-costo">—</div></div>
+        <div class="cell"><div class="cell-label">Tax (16%)</div><div class="cell-value" id="res-tax">—</div></div>
+        <div class="cell total"><div class="cell-label">Total a pagar</div><div class="cell-value" id="res-total">—</div></div>
+        <div class="cell reembolso"><div class="cell-label">Reembolso</div><div class="cell-value" id="res-reembolso">—</div></div>
+      </div>
+      <div class="rate-note" id="res-rate"></div>
+    </div>
+
+    <div class="rules glass" id="rules">
+      <div class="rules-title">Reglas aplicables</div>
+      <div class="rules-sub" id="rules-sub">Herramientas disponibles para este certificado</div>
+      <div class="rules-cloud" id="rules-cloud"></div>
+    </div>
+
+    <h2 class="section-title">Referencia completa</h2>
+    <p class="subnote">Todos los certificados en su moneda original</p>
+    <div class="ledger glass">
+      <table>
+        <thead><tr><th>Developer(s)</th><th>Certificado</th><th>Costo</th><th>Reembolso</th></tr></thead>
+        <tbody id="ref-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= PITCH ================= -->
+  <section id="pitch">
+    <h2 class="section-title">Pitch</h2>
+    <p class="subnote">Guion de venta por situación</p>
+    <div class="name-bar glass">
+      <label for="pitch-name">Nombre del socio</label>
+      <input type="text" id="pitch-name" placeholder="Escribe el nombre aquí…">
+      <div class="lang-toggle" id="pitch-lang"><button class="active" data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </div>
+    <div class="search-row"><input type="text" id="pitch-search" placeholder="Buscar por nombre…"></div>
+    <div id="pitch-list"></div>
+  </section>
+
+  <!-- ================= EMAILS ================= -->
+  <section id="emails">
+    <h2 class="section-title">Emails</h2>
+    <p class="subnote">Plantillas de correo por situación</p>
+    <div class="name-bar glass">
+      <label for="email-name">Nombre del socio</label>
+      <input type="text" id="email-name" placeholder="Escribe el nombre aquí…">
+      <div class="lang-toggle" id="email-lang"><button class="active" data-lang="es">ES</button><button data-lang="en">EN</button></div>
+    </div>
+    <div class="search-row"><input type="text" id="email-search" placeholder="Buscar por nombre…"></div>
+    <div id="email-list"></div>
+  </section>
+
+</main>
+</div>
+
+<footer>PROTOTIPO DE PRESENTACIÓN — DATOS SUJETOS A CONFIRMACIÓN FINAL</footer>
+
+<script>
+/* =========================================================
+   PEGA AQUÍ LA URL DE TU APPS SCRIPT (termina en /exec).
+   Mientras esté vacía, la app usa los datos de ejemplo de abajo
+   para que puedas presentar sin depender de la conexión.
+   ========================================================= */
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCkZKon8pcZd4CbdTKHGMpaUVg8G4RbFKNkBSj8s1huOQ5xW9Q_dAs0PJdL67AKard/exec";
+
+const TAX_PCT = 16;
+
+/* ---------- DATOS DE EJEMPLO (respaldo si no hay SCRIPT_URL o falla la conexión) ---------- */
+const mockCobranza = [
+  { developers:["Developer A"], moneda:"USD", costo:999, certificado:"Certificado $999", primerUso:12, reembolso:500, aniosBeneficio:5,
+    descuento:10, off16:16, mesesGUSA:0, mesesBanco:6, backDate:0, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:0 },
+  { developers:["Developer A"], moneda:"USD", costo:1399, certificado:"Certificado $1,399", primerUso:12, reembolso:500, aniosBeneficio:5,
+    descuento:10, off16:16, mesesGUSA:0, mesesBanco:9, backDate:2, creditoRedeem:0, trece:true, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:0 },
+  { developers:["Developer A","Developer C"], moneda:"USD", costo:2399, certificado:"Certificado $2,399", primerUso:12, reembolso:1000, aniosBeneficio:7,
+    descuento:0, off16:16, mesesGUSA:12, mesesBanco:12, backDate:3, creditoRedeem:200, trece:false, activacionPostfechada:true, redeemAdelantado:true, usoInmediato:false, descuento20:20 },
+  { developers:["Developer B"], moneda:"MXN", costo:14000, certificado:"Certificado $14,000 MXN", primerUso:12, reembolso:5000, aniosBeneficio:5,
+    descuento:0, off16:16, mesesGUSA:6, mesesBanco:0, backDate:0, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:0 },
+  { developers:["Developer B","Developer C"], moneda:"MXN", costo:12000, certificado:"Certificado $12,000 MXN", primerUso:12, reembolso:5000, aniosBeneficio:3,
+    descuento:15, off16:16, mesesGUSA:3, mesesBanco:0, backDate:1, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:0 },
+];
+
+const mockInfoDevelopers = {
+  "Developer A": { resort:"Riviera Maya Resort Group", club:"Club Riviera Elite", web:"https://example.com", incorporacion:2015,
+    costos:{2019:799,2020:820,2021:850,2022:880,2023:920,2024:950,2025:980,2026:999} },
+  "Developer B": { resort:"Mayan Palace Collection", club:"Club Mayan Select", web:"https://example.com", incorporacion:2011,
+    costos:{2019:9500,2020:9800,2021:10200,2022:10800,2023:11500,2024:12500,2025:13200,2026:14000} },
+  "Developer C": { resort:"Karisma Collection", club:"Club Karisma Prime", web:"https://example.com", incorporacion:2018,
+    costos:{2021:1900,2022:2000,2023:2150,2024:2250,2025:2320,2026:2399} },
+};
+
+const mockDirectorio = {
+  "Developer A": { director:"Luis Herrera", gerenteSala:"Ana Cordero", gerenteOps:"Marco Díaz", vlo:"Sofía Reyes" },
+  "Developer B": { director:"Karla Núñez", gerenteSala:"Iván Torres", gerenteOps:"Paola Méndez", vlo:"Ricardo Uc" },
+  "Developer C": { director:"Gabriel Ortiz", gerenteSala:"Renata Solís", gerenteOps:"Héctor Chan", vlo:"Daniela Puc" },
+};
+
+const mockPitch = [
+  {nombre:"Bienvenida",
+   es:"Buenos días {NOMBRE}, mi nombre es [Su Nombre] y seré quien lo acompañe hoy. Antes de comenzar, quiero agradecerle el tiempo que nos regala — sé que sus vacaciones son valiosas y prometo que esta plática será breve, directa y útil para usted.",
+   en:"Good morning {NOMBRE}, my name is [Your Name] and I'll be with you today. Before we start, thank you for the time you're giving us — I know your vacation time is valuable, and this conversation will be short, direct, and useful for you."},
+  {nombre:"Voice Mail",
+   es:"Buenas tardes {NOMBRE}, le hablo de parte de [Empresa] en relación a su certificado de hospedaje. Tenemos información importante sobre su reservación, por favor devuélvame la llamada al [Teléfono] a la brevedad para no perder su fecha asignada.",
+   en:"Good afternoon {NOMBRE}, I'm calling on behalf of [Company] regarding your stay certificate. We have important information about your reservation — please call me back at [Phone] as soon as possible so you don't lose your assigned date."},
+  {nombre:"Manejo de Objeción — Precio",
+   es:"Entiendo perfectamente su preocupación por el costo, {NOMBRE}, y es justo lo que quiero resolver con usted: no le estoy pidiendo que decida hoy sobre unas vacaciones, sino sobre una oportunidad que solo está disponible en esta sala.",
+   en:"I completely understand your concern about the cost, {NOMBRE}, and that's exactly what I want to work through with you: I'm not asking you to decide on a vacation today, but on an opportunity that's only available in this room."},
+  {nombre:"Cierre Suave",
+   es:"Con todo lo que hemos platicado, {NOMBRE}, ¿qué le parece si aseguramos su lugar hoy mismo con la promoción que le mostré, sabiendo que no hay ningún compromiso adicional de su parte?",
+   en:"Based on everything we've discussed, {NOMBRE}, how about we secure your spot today with the promotion I showed you, knowing there's no additional commitment on your part?"},
+];
+
+const mockEmails = [
+  {nombre:"Confirmación de Reservación",
+   es:"Estimado(a) {NOMBRE}, le confirmamos que su certificado de hospedaje ha sido registrado con éxito. Adjunto encontrará los detalles de su estancia, así como los pasos a seguir antes de su llegada.",
+   en:"Dear {NOMBRE}, we confirm your stay certificate has been successfully registered. Attached you'll find your stay details along with the next steps before your arrival."},
+  {nombre:"Recordatorio de Cita",
+   es:"Estimado(a) {NOMBRE}, le recordamos amablemente su cita programada para el día [Fecha] a las [Hora]. Si necesita reagendar, por favor responda este correo con al menos 24 horas de anticipación.",
+   en:"Dear {NOMBRE}, this is a friendly reminder of your appointment scheduled for [Date] at [Time]. If you need to reschedule, please reply to this email at least 24 hours in advance."},
+  {nombre:"Seguimiento Post-Venta",
+   es:"Estimado(a) {NOMBRE}, gracias por confiarnos sus próximas vacaciones. Quedamos atentos a cualquier duda sobre su contrato y le compartimos los datos de contacto de su asesor asignado para dar seguimiento personalizado.",
+   en:"Dear {NOMBRE}, thank you for trusting us with your upcoming vacation. We remain available for any questions about your contract and are sharing your assigned advisor's contact details for personalized follow-up."},
+];
+
+/* Estas variables activas se llenan en init() con datos reales o de ejemplo */
+let cobranza = [], infoDevelopers = {}, directorio = {}, pitchData = [], emailsData = [];
+
+/* ---------- TIPOS DE CAMBIO ---------- */
+let rates = null, ratesDate = null, ratesError = false;
+async function loadRates(){
+  try{
+    const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=MXN,CAD,EUR');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    rates = {USD:1, MXN:data.rates.MXN, CAD:data.rates.CAD, EUR:data.rates.EUR};
+    ratesDate = data.date;
+  }catch(e){ rates = {USD:1, MXN:18.5, CAD:1.37, EUR:0.92}; ratesError = true; }
+}
+function convert(amountUSD, toCurrency){ return rates ? amountUSD * rates[toCurrency] : amountUSD; }
+function fmtCurrency(amount, currency){ return amount.toLocaleString('en-US', {style:'currency', currency, maximumFractionDigits: currency==='MXN'?0:2}); }
+
+/* ---------- TABS ---------- */
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('main section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------- WIZARD ---------- */
+const devSelect = document.getElementById('sel-developer');
+const certSelect = document.getElementById('sel-certificado');
+const qtyPills = document.querySelectorAll('#qty-pills .pill');
+const qtyManualWrap = document.getElementById('qty-manual');
+const qtyInput = document.getElementById('qty-input');
+const currPills = document.querySelectorAll('#curr-pills .pill');
+const resultBox = document.getElementById('result');
+const rulesBox = document.getElementById('rules');
+const fichaBox = document.getElementById('ficha');
+const nodes = [1,2,3,4].map(n=>document.getElementById('node'+n));
+const traces = [1,2,3].map(n=>document.getElementById('trace'+n));
+
+let selectedQty = null, selectedCurrency = null, activeDiscountKey = null, activeCert = null;
+
+function setCircuit(step){
+  nodes.forEach((n,i)=>{ n.classList.remove('active','done'); if(i+1<step) n.classList.add('done'); else if(i+1===step) n.classList.add('active'); });
+  traces.forEach((t,i)=>{ t.querySelector('.trace-fill').style.width = (i+1<step) ? '100%' : '0%'; });
+}
+
+function populateDevelopers(){
+  devSelect.innerHTML = '<option value="">Selecciona…</option>';
+  const devs = [...new Set(cobranza.flatMap(r=>r.developers))].sort();
+  devs.forEach(d=>{ const opt=document.createElement('option'); opt.value=d; opt.textContent=d; devSelect.appendChild(opt); });
+}
+
+function resetFrom(level){
+  if(level<=2){ qtyPills.forEach(p=>{p.classList.remove('selected'); p.disabled=true;}); qtyManualWrap.classList.remove('show'); selectedQty=null; }
+  if(level<=3){ currPills.forEach(p=>{p.classList.remove('selected'); p.disabled=true;}); selectedCurrency=null; }
+  resultBox.classList.remove('show'); rulesBox.classList.remove('show');
+}
+
+devSelect.addEventListener('change', ()=>{
+  const dev = devSelect.value;
+  certSelect.innerHTML=''; resetFrom(2); activeCert=null;
+  if(!dev){ certSelect.disabled=true; certSelect.innerHTML='<option value="">Selecciona un developer primero</option>'; fichaBox.classList.remove('show'); setCircuit(1); return; }
+  certSelect.disabled=false; certSelect.innerHTML='<option value="">Selecciona…</option>';
+  cobranza.filter(r=>r.developers.includes(dev)).forEach((r,i)=>{
+    const opt=document.createElement('option'); opt.value=i+"__"+dev; opt.textContent=`${r.certificado} (${r.moneda})`;
+    certSelect.appendChild(opt);
+  });
+  renderFicha(dev);
+  setCircuit(2);
+});
+
+certSelect.addEventListener('change', ()=>{
+  resetFrom(2);
+  if(!certSelect.value){ activeCert=null; setCircuit(2); return; }
+  const [idx, dev] = certSelect.value.split('__');
+  activeCert = cobranza.filter(r=>r.developers.includes(dev))[parseInt(idx,10)];
+  qtyPills.forEach(p=>p.disabled=false);
+  setCircuit(3);
+});
+
+qtyPills.forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    if(pill.disabled) return;
+    qtyPills.forEach(p=>p.classList.remove('selected')); pill.classList.add('selected');
+    if(pill.dataset.qty==='other'){
+      qtyManualWrap.classList.add('show'); qtyInput.focus(); selectedQty=null;
+      currPills.forEach(p=>p.disabled=true); resultBox.classList.remove('show'); rulesBox.classList.remove('show');
+      return;
+    }
+    qtyManualWrap.classList.remove('show'); selectedQty = parseInt(pill.dataset.qty,10); advanceToStep4();
+  });
+});
+qtyInput.addEventListener('input', ()=>{
+  const v = parseInt(qtyInput.value,10);
+  if(v>=1 && v<=20){ selectedQty=v; advanceToStep4(); }
+  else { selectedQty=null; currPills.forEach(p=>p.disabled=true); resultBox.classList.remove('show'); rulesBox.classList.remove('show'); }
+});
+function advanceToStep4(){ currPills.forEach(p=>p.disabled=false); setCircuit(4); }
+
+currPills.forEach(pill=>{
+  pill.addEventListener('click', ()=>{
+    if(pill.disabled) return;
+    currPills.forEach(p=>p.classList.remove('selected')); pill.classList.add('selected');
+    selectedCurrency = pill.dataset.curr; activeDiscountKey = null;
+    setCircuit(5); rulesBox.classList.add('show'); renderRules(); showResult();
+  });
+});
+
+/* ---------- FICHA DEVELOPER ---------- */
+function renderFicha(dev){
+  const info = infoDevelopers[dev]; const dir = directorio[dev];
+  if(!info && !dir){ fichaBox.classList.remove('show'); return; }
+  document.getElementById('ficha-resort').textContent = info?.resort || dev;
+  document.getElementById('ficha-club').textContent = info ? `${info.club} · desde ${info.incorporacion}` : '';
+  document.getElementById('ficha-web').href = info?.web || '#';
+
+  const contactsEl = document.getElementById('ficha-contacts');
+  contactsEl.innerHTML = dir ? Object.entries({
+    'Director Proyecto':dir.director, 'Gerente Sala':dir.gerenteSala, 'Gerente Ops':dir.gerenteOps, 'Contacto VLO':dir.vlo
+  }).filter(([,v])=>v).map(([role,name])=>`<div class="contact-chip"><span class="contact-role">${role}</span><span class="contact-name">${name}</span></div>`).join('')
+  : '<span class="rules-empty">Sin directorio cargado.</span>';
+
+  const barsEl = document.getElementById('ficha-costbars');
+  if(info && info.costos && Object.keys(info.costos).length){
+    const years = Object.keys(info.costos).sort();
+    const max = Math.max(...Object.values(info.costos));
+    barsEl.innerHTML = years.map(y=>{
+      const h = Math.max(4, Math.round((info.costos[y]/max)*44));
+      return `<div class="cost-bar-wrap"><div class="cost-bar" style="height:${h}px" title="${y}: ${info.costos[y]}"></div><div class="cost-year">'${y.toString().slice(2)}</div></div>`;
+    }).join('');
+  } else {
+    barsEl.innerHTML = '<span class="rules-empty">Sin histórico cargado.</span>';
+  }
+  fichaBox.classList.add('show');
+}
+
+/* ---------- REGLAS APLICABLES ---------- */
+const RULE_DEFS = [
+  {key:'descuento',   type:'discount', label:v=>`Descuento ${v}%`},
+  {key:'off16',       type:'discount', label:()=>`16% OFF (tax)`},
+  {key:'descuento20', type:'discount', label:v=>`Descuento ${v}%`},
+  {key:'mesesGUSA',   type:'info',     label:()=>`Meses GUSA`, val:v=>`${v} meses`},
+  {key:'mesesBanco',  type:'info',     label:()=>`Meses Banco`, val:v=>`${v} meses`},
+  {key:'backDate',    type:'info',     label:()=>`Backdate`, val:v=>`${v} meses antes`},
+  {key:'creditoRedeem',type:'info',    label:()=>`Crédito Redeem`, val:v=>fmtCurrency(convert(v,selectedCurrency||'USD'), selectedCurrency||'USD')},
+  {key:'trece',       type:'flag',     label:()=>`13 meses de uso`},
+  {key:'activacionPostfechada', type:'flag', label:()=>`Activación postfechada`},
+  {key:'redeemAdelantado', type:'flag', label:()=>`Redeem adelantado`},
+  {key:'usoInmediato', type:'flag',    label:()=>`Uso inmediato`},
+];
+
+function renderRules(){
+  const cloud = document.getElementById('rules-cloud'); cloud.innerHTML = '';
+  if(!activeCert){ cloud.innerHTML = '<span class="rules-empty">Selecciona un certificado.</span>'; return; }
+  const applicable = RULE_DEFS.filter(def=>{ const v = activeCert[def.key]; return v && v !== 0; });
+  if(!applicable.length){ cloud.innerHTML = '<span class="rules-empty">Este certificado no tiene herramientas de cierre adicionales.</span>'; return; }
+  applicable.forEach((def, i)=>{
+    const v = activeCert[def.key];
+    const chip = document.createElement('div');
+    chip.className = 'rule-chip' + (def.type==='discount' ? ' toggle' : def.type==='flag' ? ' flag' : '');
+    chip.style.animationDelay = (i*0.05)+'s';
+    if(def.type==='discount' && activeDiscountKey===def.key) chip.classList.add('active');
+    chip.innerHTML = `<span class="rule-dot"></span><span class="rule-name">${def.label(v)}</span>${def.val ? `<span class="rule-val">${def.val(v)}</span>` : ''}`;
+    if(def.type==='discount'){
+      chip.addEventListener('click', ()=>{ activeDiscountKey = (activeDiscountKey===def.key) ? null : def.key; renderRules(); showResult(); });
+    }
+    cloud.appendChild(chip);
+  });
+}
+
+/* ---------- RESULTADO ---------- */
+function showResult(){
+  if(!activeCert || !selectedCurrency || !selectedQty) return;
+  const c = activeCert;
+  let costoUSD = (c.moneda==='MXN' ? c.costo/rates.MXN : c.costo) * selectedQty;
+  const reembolsoUSD = (c.moneda==='MXN' ? c.reembolso/rates.MXN : c.reembolso) * selectedQty;
+
+  let taxPct = TAX_PCT;
+  if(activeDiscountKey === 'off16') taxPct = 0;
+  if(activeDiscountKey === 'descuento') costoUSD *= (1 - c.descuento/100);
+  if(activeDiscountKey === 'descuento20') costoUSD *= (1 - c.descuento20/100);
+
+  const taxUSD = costoUSD * (taxPct/100);
+  const totalUSD = costoUSD + taxUSD;
+  const curr = selectedCurrency;
+
+  document.getElementById('res-title').textContent = `${c.certificado} × ${selectedQty}`;
+  document.getElementById('res-dev').textContent = c.developers.join(' · ');
+
+  const primerUso = c.primerUso || 12;
+  const usoEfectivo = activeDiscountKey===null && activeCert.backDate ? primerUso : primerUso; // backdate se muestra informativo, no altera automáticamente
+  let metaParts = [];
+  if(c.aniosBeneficio) metaParts.push(`Vigencia: ${c.aniosBeneficio} años`);
+  metaParts.push(`Primer uso: ${primerUso} meses${c.backDate ? ` (negociable hasta ${c.backDate} antes)` : ''}`);
+  document.getElementById('res-meta').textContent = metaParts.join(' · ');
+
+  document.getElementById('res-costo').textContent = fmtCurrency(convert(costoUSD,curr), curr);
+  document.getElementById('res-tax').innerHTML = taxPct
+    ? `${fmtCurrency(convert(taxUSD,curr),curr)} (${taxPct}%)`
+    : `<span class="cell-strike">${fmtCurrency(convert(costoUSD*(TAX_PCT/100),curr),curr)}</span> $0.00`;
+  document.getElementById('res-total').textContent = fmtCurrency(convert(totalUSD,curr), curr);
+  document.getElementById('res-reembolso').textContent = fmtCurrency(convert(reembolsoUSD,curr), curr);
+
+  const note = curr===c.moneda ? 'Moneda original del certificado.' : (ratesError ? 'Tasa aproximada — sin conexión al tipo de cambio oficial.' : `Tipo de cambio de referencia (BCE) al ${ratesDate}.`);
+  document.getElementById('res-rate').textContent = note;
+  resultBox.classList.add('show');
+}
+
+/* ---------- REFERENCIA ---------- */
+function renderRefTable(){
+  const tbody = document.getElementById('ref-tbody');
+  tbody.innerHTML = cobranza.map(c=>`
+    <tr><td>${c.developers.join(', ')}</td><td>${c.certificado}</td>
+    <td class="num">${c.costo.toLocaleString('en-US')} ${c.moneda}</td>
+    <td class="num">${c.reembolso.toLocaleString('en-US')} ${c.moneda}</td></tr>
+  `).join('');
+}
+
+/* ---------- PITCH / EMAILS ---------- */
+function buildTextList(containerId, data, {query='', lang='es', nameValue=''} = {}){
+  const el = document.getElementById(containerId);
+  const q = query.toLowerCase();
+  const filtered = data.filter(d => !q || d.nombre.toLowerCase().includes(q));
+  const displayName = nameValue.trim() || (lang==='es' ? '[Nombre del Socio]' : "[Partner's Name]");
+  if(!filtered.length){ el.innerHTML = `<p class="subnote" style="text-align:center;padding:20px 0;">Sin resultados.</p>`; return; }
+  el.innerHTML = filtered.map((d,i)=>{
+    const withName = (d[lang]||'').split('{NOMBRE}').join(`<mark>${displayName}</mark>`);
+    return `<div class="entry-card glass"><span class="entry-name">${d.nombre}</span><p class="entry-text">${withName}</p><button class="copy-btn" data-copy="${containerId}-${i}">Copiar</button></div>`;
+  }).join('');
+  el.querySelectorAll('.copy-btn').forEach((btn, idx)=>{
+    btn.addEventListener('click', ()=>{
+      navigator.clipboard?.writeText((filtered[idx][lang]||'').split('{NOMBRE}').join(displayName));
+      btn.textContent='Copiado'; setTimeout(()=>btn.textContent='Copiar',1400);
+    });
+  });
+}
+function setupSection(prefix, data){
+  const nameInput = document.getElementById(`${prefix}-name`);
+  const search = document.getElementById(`${prefix}-search`);
+  const listId = `${prefix}-list`;
+  const langBtns = document.querySelectorAll(`#${prefix}-lang button`);
+  let lang='es';
+  function refresh(){ buildTextList(listId, data, {query:search.value, lang, nameValue:nameInput.value}); }
+  nameInput.addEventListener('input', refresh);
+  search.addEventListener('input', refresh);
+  langBtns.forEach(b=>b.addEventListener('click', ()=>{ langBtns.forEach(x=>x.classList.remove('active')); b.classList.add('active'); lang=b.dataset.lang; refresh(); }));
+  refresh();
+}
+
+/* ---------- CARGA REMOTA ---------- */
+async function loadRemote(){
+  if(!SCRIPT_URL) return null;
+  try{
+    const res = await fetch(SCRIPT_URL);
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    if(!Array.isArray(data.cobranza)) throw new Error('formato inesperado');
+    return data;
+  }catch(e){ console.warn('No se pudo cargar desde Apps Script, usando datos de ejemplo.', e); return null; }
+}
+
+function showStatus(isLive){
+  const el = document.getElementById('status-banner');
+  el.classList.add('show');
+  if(isLive){
+    el.classList.add('live'); el.classList.remove('demo');
+    el.innerHTML = '<span class="status-dot"></span> Conectado a tu Sheet en vivo';
+  } else {
+    el.classList.add('demo'); el.classList.remove('live');
+    el.innerHTML = '<span class="status-dot"></span> Modo demo — datos de ejemplo (agrega tu SCRIPT_URL para conectar el Sheet real)';
+  }
+}
+
+/* ---------- INIT ---------- */
+(async function init(){
+  await loadRates();
+  const remote = await loadRemote();
+
+  cobranza = remote?.cobranza || mockCobranza;
+  infoDevelopers = remote?.infoDevelopers || mockInfoDevelopers;
+  directorio = remote?.directorio || mockDirectorio;
+  pitchData = remote?.pitch || mockPitch;
+  emailsData = remote?.emails || mockEmails;
+
+  showStatus(!!remote);
+  populateDevelopers();
+  renderRefTable();
+  setupSection('pitch', pitchData);
+  setupSection('email', emailsData);
+})();
+</script>
+
+</body>
+</html>
