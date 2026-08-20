@@ -110,9 +110,9 @@
   .contact-role{font-family:'JetBrains Mono', monospace; font-size:9px; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold);}
   .contact-name{font-size:13px; color:var(--foam);}
   .cost-bars{display:flex; align-items:flex-end; gap:6px; height:78px; overflow-x:auto; padding-top:14px;}
-  .cost-bar-wrap{flex:1; min-width:30px; display:flex; flex-direction:column; align-items:center; gap:4px;}
+  .cost-bar-wrap{flex:1; min-width:52px; display:flex; flex-direction:column; align-items:center; gap:4px;}
   .cost-bar{width:100%; background:linear-gradient(180deg, var(--cyan), var(--blue)); border-radius:2px 2px 0 0; min-height:2px;}
-  .cost-val{font-family:'JetBrains Mono', monospace; font-size:9px; color:var(--foam); white-space:nowrap;}
+  .cost-val{font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--foam); white-space:nowrap;}
   .cost-year{font-family:'JetBrains Mono', monospace; font-size:8px; color:var(--muted);}
 
   /* RESULT */
@@ -384,6 +384,8 @@ const mockCobranza = [
     descuento:false, off16:true, mesesGUSA:true, mesesBanco:false, backDate:false, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:false },
   { developers:["Developer B","Developer C"], moneda:"MXN", costo:12000, certificado:"Certificado $12,000 MXN", primerUso:12, reembolso:5000, aniosBeneficio:3,
     descuento:true, off16:true, mesesGUSA:true, mesesBanco:false, backDate:true, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:false },
+  { developers:["Developer A"], moneda:"MXN", costo:18500, certificado:"Certificado $999 (equivalente MXN)", primerUso:12, reembolso:9000, aniosBeneficio:5,
+    descuento:true, off16:true, mesesGUSA:false, mesesBanco:true, backDate:false, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:false },
 ];
 
 const mockInfoDevelopers = {
@@ -496,7 +498,7 @@ devSelect.addEventListener('change', ()=>{
   if(!dev){ certSelect.disabled=true; certSelect.innerHTML='<option value="">Selecciona un developer primero</option>'; fichaBox.classList.remove('show'); setCircuit(1); return; }
   certSelect.disabled=false; certSelect.innerHTML='<option value="">Selecciona…</option>';
   cobranza.filter(r=>r.developers.includes(dev)).forEach((r,i)=>{
-    const opt=document.createElement('option'); opt.value=i+"__"+dev; opt.textContent=`${r.certificado} (${r.moneda})`;
+    const opt=document.createElement('option'); opt.value=i+"__"+dev; opt.textContent=`${r.certificado} — precio en ${r.moneda}`;
     certSelect.appendChild(opt);
   });
   renderFicha(dev);
@@ -559,8 +561,7 @@ function buildCostBars(costos){
     const v = costos[y];
     // Escala desde el mínimo, no desde cero, para que los incrementos se noten aunque sean pequeños.
     const h = range === 0 ? 30 : Math.round(14 + ((v-min)/range)*44);
-    const short = v >= 1000 ? Math.round(v/1000)+'k' : v;
-    return `<div class="cost-bar-wrap"><div class="cost-val">${short}</div><div class="cost-bar" style="height:${h}px" title="${y}: ${v.toLocaleString('en-US')}"></div><div class="cost-year">'${y.toString().slice(2)}</div></div>`;
+    return `<div class="cost-bar-wrap"><div class="cost-val">${v.toLocaleString('en-US')}</div><div class="cost-bar" style="height:${h}px" title="${y}: ${v.toLocaleString('en-US')}"></div><div class="cost-year">'${y.toString().slice(2)}</div></div>`;
   }).join('');
 }
 
