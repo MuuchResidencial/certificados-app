@@ -156,6 +156,13 @@
   tbody td{padding:12px 14px; font-size:13.5px; border-top:1px solid var(--line); color:var(--foam);}
   tbody td.num{font-family:'JetBrains Mono', monospace; font-size:12.5px; color:var(--muted);}
   tbody tr:hover{background:rgba(34,211,238,0.04);}
+  .dev-badge{display:inline-block; font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:3px 8px; margin:0 4px 4px 0; border-radius:12px; border:1px solid var(--line-strong); color:var(--cyan);}
+
+  .fichas-list{display:flex; flex-direction:column; gap:16px;}
+  .flag-badge{display:inline-flex; align-items:center; gap:5px; font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:5px 10px; margin:0 6px 6px 0; border-radius:12px; border:1px solid var(--line);}
+  .flag-badge.yes{color:var(--good); border-color:rgba(74,222,128,0.35);}
+  .flag-badge.no{color:var(--muted); opacity:0.55;}
+  .token-line{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--muted); margin-top:8px;}
 
   .name-bar{padding:16px 18px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
   .name-bar label{font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--cyan);}
@@ -200,6 +207,7 @@
 
 <nav class="tabs">
   <button class="active" data-tab="certificados">Certificados</button>
+  <button data-tab="fichas">Fichas</button>
   <button data-tab="pitch">Pitch</button>
   <button data-tab="emails">Emails</button>
 </nav>
@@ -307,6 +315,13 @@
     </div>
   </section>
 
+  <!-- ================= FICHAS TÉCNICAS ================= -->
+  <section id="fichas">
+    <h2 class="section-title">Fichas técnicas</h2>
+    <p class="subnote">Perfil completo de cada developer</p>
+    <div id="fichas-grid"></div>
+  </section>
+
   <!-- ================= PITCH ================= -->
   <section id="pitch">
     <h2 class="section-title">Pitch</h2>
@@ -344,30 +359,34 @@
    Mientras esté vacía, la app usa los datos de ejemplo de abajo
    para que puedas presentar sin depender de la conexión.
    ========================================================= */
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxCkZKon8pcZd4CbdTKHGMpaUVg8G4RbFKNkBSj8s1huOQ5xW9Q_dAs0PJdL67AKard/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzdFrfNtLadU7yKcYrrfgZs9rtWZca1nOqiv9O8OOT1g1o4zNnWlAKJLJJcl9Des60v/exec";
 
 const TAX_PCT = 16;
+
+const DESCUENTO_PCT = 10;  // Descuento genérico confirmado por Daniel
+const OFF16_PCT = 16;      // mismo % que el tax estándar
+const DESCUENTO20_PCT = 20;
 
 /* ---------- DATOS DE EJEMPLO (respaldo si no hay SCRIPT_URL o falla la conexión) ---------- */
 const mockCobranza = [
   { developers:["Developer A"], moneda:"USD", costo:999, certificado:"Certificado $999", primerUso:12, reembolso:500, aniosBeneficio:5,
-    descuento:10, off16:16, mesesGUSA:0, mesesBanco:6, backDate:0, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:0 },
+    descuento:true, off16:true, mesesGUSA:false, mesesBanco:true, backDate:false, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:false },
   { developers:["Developer A"], moneda:"USD", costo:1399, certificado:"Certificado $1,399", primerUso:12, reembolso:500, aniosBeneficio:5,
-    descuento:10, off16:16, mesesGUSA:0, mesesBanco:9, backDate:2, creditoRedeem:0, trece:true, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:0 },
+    descuento:true, off16:true, mesesGUSA:false, mesesBanco:true, backDate:true, creditoRedeem:false, trece:true, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:false },
   { developers:["Developer A","Developer C"], moneda:"USD", costo:2399, certificado:"Certificado $2,399", primerUso:12, reembolso:1000, aniosBeneficio:7,
-    descuento:0, off16:16, mesesGUSA:12, mesesBanco:12, backDate:3, creditoRedeem:200, trece:false, activacionPostfechada:true, redeemAdelantado:true, usoInmediato:false, descuento20:20 },
+    descuento:false, off16:true, mesesGUSA:true, mesesBanco:true, backDate:true, creditoRedeem:true, trece:false, activacionPostfechada:true, redeemAdelantado:true, usoInmediato:false, descuento20:true },
   { developers:["Developer B"], moneda:"MXN", costo:14000, certificado:"Certificado $14,000 MXN", primerUso:12, reembolso:5000, aniosBeneficio:5,
-    descuento:0, off16:16, mesesGUSA:6, mesesBanco:0, backDate:0, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:0 },
+    descuento:false, off16:true, mesesGUSA:true, mesesBanco:false, backDate:false, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:true, descuento20:false },
   { developers:["Developer B","Developer C"], moneda:"MXN", costo:12000, certificado:"Certificado $12,000 MXN", primerUso:12, reembolso:5000, aniosBeneficio:3,
-    descuento:15, off16:16, mesesGUSA:3, mesesBanco:0, backDate:1, creditoRedeem:0, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:0 },
+    descuento:true, off16:true, mesesGUSA:true, mesesBanco:false, backDate:true, creditoRedeem:false, trece:false, activacionPostfechada:false, redeemAdelantado:false, usoInmediato:false, descuento20:false },
 ];
 
 const mockInfoDevelopers = {
-  "Developer A": { resort:"Riviera Maya Resort Group", club:"Club Riviera Elite", web:"https://example.com", incorporacion:2015,
+  "Developer A": { resort:"Riviera Maya Resort Group", club:"Club Riviera Elite", web:"https://example.com", incorporacion:2015, packed:true, sinTarjeta:false, token:"RMG-A1",
     costos:{2019:799,2020:820,2021:850,2022:880,2023:920,2024:950,2025:980,2026:999} },
-  "Developer B": { resort:"Mayan Palace Collection", club:"Club Mayan Select", web:"https://example.com", incorporacion:2011,
+  "Developer B": { resort:"Mayan Palace Collection", club:"Club Mayan Select", web:"https://example.com", incorporacion:2011, packed:false, sinTarjeta:true, token:"MPC-B7",
     costos:{2019:9500,2020:9800,2021:10200,2022:10800,2023:11500,2024:12500,2025:13200,2026:14000} },
-  "Developer C": { resort:"Karisma Collection", club:"Club Karisma Prime", web:"https://example.com", incorporacion:2018,
+  "Developer C": { resort:"Karisma Collection", club:"Club Karisma Prime", web:"https://example.com", incorporacion:2018, packed:true, sinTarjeta:true, token:"KAR-C3",
     costos:{2021:1900,2022:2000,2023:2150,2024:2250,2025:2320,2026:2399} },
 };
 
@@ -541,33 +560,32 @@ function renderFicha(dev){
   fichaBox.classList.add('show');
 }
 
-/* ---------- REGLAS APLICABLES ---------- */
+/* ---------- REGLAS APLICABLES (todas SI/NO en tu Sheet) ---------- */
 const RULE_DEFS = [
-  {key:'descuento',   type:'discount', label:v=>`Descuento ${v}%`},
-  {key:'off16',       type:'discount', label:()=>`16% OFF (tax)`},
-  {key:'descuento20', type:'discount', label:v=>`Descuento ${v}%`},
-  {key:'mesesGUSA',   type:'info',     label:()=>`Meses GUSA`, val:v=>`${v} meses`},
-  {key:'mesesBanco',  type:'info',     label:()=>`Meses Banco`, val:v=>`${v} meses`},
-  {key:'backDate',    type:'info',     label:()=>`Backdate`, val:v=>`${v} meses antes`},
-  {key:'creditoRedeem',type:'info',    label:()=>`Crédito Redeem`, val:v=>fmtCurrency(convert(v,selectedCurrency||'USD'), selectedCurrency||'USD')},
-  {key:'trece',       type:'flag',     label:()=>`13 meses de uso`},
-  {key:'activacionPostfechada', type:'flag', label:()=>`Activación postfechada`},
-  {key:'redeemAdelantado', type:'flag', label:()=>`Redeem adelantado`},
-  {key:'usoInmediato', type:'flag',    label:()=>`Uso inmediato`},
+  {key:'descuento',   type:'discount', label:`Descuento ${DESCUENTO_PCT}%`},
+  {key:'off16',       type:'discount', label:`16% OFF (tax)`},
+  {key:'descuento20', type:'discount', label:`Descuento ${DESCUENTO20_PCT}%`},
+  {key:'mesesGUSA',   type:'flag',     label:`Financiamiento GUSA disponible`},
+  {key:'mesesBanco',  type:'flag',     label:`Financiamiento con Banco disponible`},
+  {key:'backDate',    type:'flag',     label:`Backdate disponible (hasta 3 meses antes)`},
+  {key:'creditoRedeem',type:'flag',    label:`Crédito Redeem disponible`},
+  {key:'trece',       type:'flag',     label:`13 meses de uso`},
+  {key:'activacionPostfechada', type:'flag', label:`Activación postfechada`},
+  {key:'redeemAdelantado', type:'flag', label:`Redeem adelantado`},
+  {key:'usoInmediato', type:'flag',    label:`Uso inmediato`},
 ];
 
 function renderRules(){
   const cloud = document.getElementById('rules-cloud'); cloud.innerHTML = '';
   if(!activeCert){ cloud.innerHTML = '<span class="rules-empty">Selecciona un certificado.</span>'; return; }
-  const applicable = RULE_DEFS.filter(def=>{ const v = activeCert[def.key]; return v && v !== 0; });
+  const applicable = RULE_DEFS.filter(def => activeCert[def.key] === true);
   if(!applicable.length){ cloud.innerHTML = '<span class="rules-empty">Este certificado no tiene herramientas de cierre adicionales.</span>'; return; }
   applicable.forEach((def, i)=>{
-    const v = activeCert[def.key];
     const chip = document.createElement('div');
-    chip.className = 'rule-chip' + (def.type==='discount' ? ' toggle' : def.type==='flag' ? ' flag' : '');
+    chip.className = 'rule-chip' + (def.type==='discount' ? ' toggle' : ' flag');
     chip.style.animationDelay = (i*0.05)+'s';
     if(def.type==='discount' && activeDiscountKey===def.key) chip.classList.add('active');
-    chip.innerHTML = `<span class="rule-dot"></span><span class="rule-name">${def.label(v)}</span>${def.val ? `<span class="rule-val">${def.val(v)}</span>` : ''}`;
+    chip.innerHTML = `<span class="rule-dot"></span><span class="rule-name">${def.label}</span>`;
     if(def.type==='discount'){
       chip.addEventListener('click', ()=>{ activeDiscountKey = (activeDiscountKey===def.key) ? null : def.key; renderRules(); showResult(); });
     }
@@ -584,8 +602,8 @@ function showResult(){
 
   let taxPct = TAX_PCT;
   if(activeDiscountKey === 'off16') taxPct = 0;
-  if(activeDiscountKey === 'descuento') costoUSD *= (1 - c.descuento/100);
-  if(activeDiscountKey === 'descuento20') costoUSD *= (1 - c.descuento20/100);
+  if(activeDiscountKey === 'descuento') costoUSD *= (1 - DESCUENTO_PCT/100);
+  if(activeDiscountKey === 'descuento20') costoUSD *= (1 - DESCUENTO20_PCT/100);
 
   const taxUSD = costoUSD * (taxPct/100);
   const totalUSD = costoUSD + taxUSD;
@@ -595,10 +613,9 @@ function showResult(){
   document.getElementById('res-dev').textContent = c.developers.join(' · ');
 
   const primerUso = c.primerUso || 12;
-  const usoEfectivo = activeDiscountKey===null && activeCert.backDate ? primerUso : primerUso; // backdate se muestra informativo, no altera automáticamente
   let metaParts = [];
   if(c.aniosBeneficio) metaParts.push(`Vigencia: ${c.aniosBeneficio} años`);
-  metaParts.push(`Primer uso: ${primerUso} meses${c.backDate ? ` (negociable hasta ${c.backDate} antes)` : ''}`);
+  metaParts.push(`Primer uso: ${primerUso} meses${c.backDate ? ' (negociable hasta 3 meses antes)' : ''}`);
   document.getElementById('res-meta').textContent = metaParts.join(' · ');
 
   document.getElementById('res-costo').textContent = fmtCurrency(convert(costoUSD,curr), curr);
@@ -617,10 +634,64 @@ function showResult(){
 function renderRefTable(){
   const tbody = document.getElementById('ref-tbody');
   tbody.innerHTML = cobranza.map(c=>`
-    <tr><td>${c.developers.join(', ')}</td><td>${c.certificado}</td>
+    <tr><td>${c.developers.map(d=>`<span class="dev-badge">${d}</span>`).join('')}</td><td>${c.certificado}</td>
     <td class="num">${c.costo.toLocaleString('en-US')} ${c.moneda}</td>
     <td class="num">${c.reembolso.toLocaleString('en-US')} ${c.moneda}</td></tr>
   `).join('');
+}
+
+/* ---------- FICHAS TÉCNICAS (todas, navegables) ---------- */
+function renderFichasGrid(){
+  const grid = document.getElementById('fichas-grid');
+  const devs = Object.keys(infoDevelopers);
+  if(!devs.length){ grid.innerHTML = '<p class="rules-empty">Sin fichas cargadas.</p>'; return; }
+  grid.className = 'fichas-list';
+  grid.innerHTML = devs.map(dev=>{
+    const info = infoDevelopers[dev];
+    const dir = directorio[dev];
+    const contacts = dir ? Object.entries({
+      'Director Proyecto':dir.director, 'Gerente Sala':dir.gerenteSala, 'Gerente Ops':dir.gerenteOps, 'Contacto VLO':dir.vlo
+    }).filter(([,v])=>v).map(([role,name])=>`<div class="contact-chip"><span class="contact-role">${role}</span><span class="contact-name">${name}</span></div>`).join('')
+    : '<span class="rules-empty">Sin directorio cargado.</span>';
+
+    let costBars = '<span class="rules-empty">Sin histórico cargado.</span>';
+    if(info.costos && Object.keys(info.costos).length){
+      const years = Object.keys(info.costos).sort();
+      const max = Math.max(...Object.values(info.costos));
+      costBars = years.map(y=>{
+        const h = Math.max(4, Math.round((info.costos[y]/max)*44));
+        return `<div class="cost-bar-wrap"><div class="cost-bar" style="height:${h}px" title="${y}: ${info.costos[y]}"></div><div class="cost-year">'${y.toString().slice(2)}</div></div>`;
+      }).join('');
+    }
+
+    return `
+      <div class="ficha glass show">
+        <div class="ficha-head">
+          <div>
+            <div class="ficha-title">${dev}${info.resort ? ' — ' + info.resort : ''}</div>
+            <div class="ficha-sub">${info.club || ''}${info.incorporacion ? ' · desde ' + info.incorporacion : ''}</div>
+          </div>
+          <a href="${info.web || '#'}" target="_blank" class="ficha-link">Sitio web ↗</a>
+        </div>
+        <div class="ficha-grid">
+          <div>
+            <div class="ficha-block-label">Directorio</div>
+            <div>${contacts}</div>
+          </div>
+          <div>
+            <div class="ficha-block-label">Costo histórico</div>
+            <div class="cost-bars">${costBars}</div>
+          </div>
+        </div>
+        <div class="ficha-block-label" style="margin-top:16px;">Condiciones</div>
+        <div>
+          <span class="flag-badge ${info.packed ? 'yes' : 'no'}">${info.packed ? '✓' : '✕'} Packed</span>
+          <span class="flag-badge ${info.sinTarjeta ? 'yes' : 'no'}">${info.sinTarjeta ? '✓' : '✕'} Sin tarjeta</span>
+        </div>
+        ${info.token ? `<div class="token-line">Token: ${info.token}</div>` : ''}
+      </div>
+    `;
+  }).join('');
 }
 
 /* ---------- PITCH / EMAILS ---------- */
@@ -692,6 +763,7 @@ function showStatus(isLive){
   showStatus(!!remote);
   populateDevelopers();
   renderRefTable();
+  renderFichasGrid();
   setupSection('pitch', pitchData);
   setupSection('email', emailsData);
 })();
