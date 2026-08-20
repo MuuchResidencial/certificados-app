@@ -448,7 +448,7 @@ let selectedQty = null, selectedCurrency = null, activeDiscountKey = null, activ
 
 function setCircuit(step){
   nodes.forEach((n,i)=>{ n.classList.remove('active','done'); if(i+1<step) n.classList.add('done'); else if(i+1===step) n.classList.add('active'); });
-  traces.forEach((t,i)=>{ t.querySelector('.trace-fill').style.width = (i+1<step) ? '100%' : '0%'; });
+  traces.forEach((t,i)=>{ t.style.width = (i+1<step) ? '100%' : '0%'; });
 }
 
 function populateDevelopers(){
